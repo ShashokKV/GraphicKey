@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GraphicKey</string>
+    <string name="title_activity_my">GraphicKey</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="drawing_view">Drawing view</string>
+    <string name="keyInputUrl">http://10.0.2.2:8080/key</string>
+    <string name="registrationUrl">http://10.0.2.2:8080/registration</string>
+</resources>
