@@ -5,13 +5,13 @@ import android.app.Activity
 import android.graphics.*
 import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
 import com.graphic.key.data.HealthTestData
@@ -128,11 +128,6 @@ class KeyActivity : Activity() {
         stopy = event.y
         canvas.drawLine(startx, starty-100, stopx, stopy-100, paint)
         imageView.invalidate()
-
-        Log.d("KEY", "canvas.height=${canvas.height}")
-        Log.d("KEY", "canvas.width=${canvas.width}")
-        Log.d("KEY", "imageView.height=${imageView.height}")
-        Log.d("KEY", "imageView.width=${imageView.width}")
     }
 
     private fun keyCorrect() {
@@ -146,7 +141,9 @@ class KeyActivity : Activity() {
                 keyButtons.map { keyButtons -> KeyData(keyButtons.key, keyButtons.value.buttonX, keyButtons.value.buttonY) },
                 drawData)
 
-        val url = this.getString(R.string.keyInputUrl)
+        val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
+
+        val url = serverUrl + "/" + this.getString(R.string.dataUrl)
         val task = SendDataTask(WeakReference(this.applicationContext), url)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userInputData)
         attempts = 0

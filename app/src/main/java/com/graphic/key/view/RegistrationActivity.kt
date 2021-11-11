@@ -34,6 +34,8 @@ class RegistrationActivity : Activity() {
         val heightTextView = findViewById<TextView>(R.id.heightInput)
         val ageTextView = findViewById<TextView>(R.id.ageInput)
         val sexRadioGroup = findViewById<RadioGroup>(R.id.sexRadioGroup)
+        val serverAddress = findViewById<TextView>(R.id.serverAddress)
+        serverAddress.text = getString(R.string.server_address)
 
         val regButton = findViewById<Button>(R.id.registrationButton)
 
@@ -48,6 +50,7 @@ class RegistrationActivity : Activity() {
             if (weightTextView.text.isEmpty()) emptyFields.add("Вес")
             if (heightTextView.text.isEmpty()) emptyFields.add("Рост")
             if (ageTextView.text.isEmpty()) emptyFields.add("Возраст")
+            if (serverAddress.text.isEmpty()) emptyFields.add("Адрес сервера")
 
             if (emptyFields.isNotEmpty()) {
                 Toast.makeText(this, String.format("Не заполнены следующие поля: %s",
@@ -65,14 +68,21 @@ class RegistrationActivity : Activity() {
                     parseInt(ageTextView.text.toString()),
                     sex)
 
-            val url = this.getString(R.string.registrationUrl)
-            val task = SendDataTask(WeakReference(this.applicationContext), url)
+            val serverUrl = serverAddress.text.toString()
+            saveServerUrl(serverUrl)
+
+            val registrationUrl = serverUrl + "/" + this.getString(R.string.registrationUrl)
+            val task = SendDataTask(WeakReference(this.applicationContext), registrationUrl)
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, regData)
 
             val intent = Intent(this, HealthTestActivity::class.java)
             intent.putExtra("uid", uid)
             startActivity(intent)
         }
+    }
+
+    private fun saveServerUrl(url: String) {
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putString("SERVER_URL", url).apply()
     }
 
     companion object Uid {
