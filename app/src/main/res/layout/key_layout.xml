@@ -30,13 +30,13 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/button6"
+            android:id="@+id/button1"
             style="@style/RoundButton"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="64dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button3"
-            tools:text="6" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="1" />
 
         <Button
             android:id="@+id/button2"
@@ -57,15 +57,6 @@
             tools:text="3" />
 
         <Button
-            android:id="@+id/button1"
-            style="@style/RoundButton"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="64dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="1" />
-
-        <Button
             android:id="@+id/button4"
             style="@style/RoundButton"
             android:layout_marginStart="32dp"
@@ -73,6 +64,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button1"
             tools:text="4" />
+
+        <Button
+            android:id="@+id/button5"
+            style="@style/RoundButton"
+            android:layout_marginTop="64dp"
+            app:layout_constraintEnd_toStartOf="@+id/button6"
+            app:layout_constraintStart_toEndOf="@+id/button4"
+            app:layout_constraintTop_toBottomOf="@+id/button2"
+            tools:text="5" />
+
+        <Button
+            android:id="@+id/button6"
+            style="@style/RoundButton"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button3"
+            tools:text="6" />
 
         <Button
             android:id="@+id/button7"
@@ -102,12 +111,33 @@
             tools:text="9" />
 
         <Button
-            android:id="@+id/button5"
+            android:id="@+id/button10"
             style="@style/RoundButton"
             android:layout_marginTop="64dp"
-            app:layout_constraintEnd_toStartOf="@+id/button6"
-            app:layout_constraintStart_toEndOf="@+id/button4"
-            app:layout_constraintTop_toBottomOf="@+id/button2"
-            tools:text="5" />
+            android:layout_marginStart="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button7"
+            tools:text="10" />
+
+        <Button
+            android:id="@+id/button11"
+            style="@style/RoundButton"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
+            app:layout_constraintEnd_toStartOf="@+id/button12"
+            app:layout_constraintStart_toEndOf="@+id/button10"
+            app:layout_constraintTop_toBottomOf="@+id/button8"
+            tools:text="11" />
+
+        <Button
+            android:id="@+id/button12"
+            style="@style/RoundButton"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button9"
+            tools:text="12" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

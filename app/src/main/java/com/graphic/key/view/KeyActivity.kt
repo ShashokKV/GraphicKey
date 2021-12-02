@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 
 class KeyActivity : Activity() {
     private lateinit var buttons: List<RoundButton>
-    private lateinit var keyButtons: Map<Int, RoundButton>
+    private lateinit var keyButtons: MutableList<RoundButton>
     private var currentKey: Int = 1
     private var drawData: MutableList<DrawData> = arrayListOf()
     private lateinit var imageView: ImageView
@@ -39,6 +39,11 @@ class KeyActivity : Activity() {
 
     private var stopx: Float = 0f
     private var stopy: Float = 0f
+
+    private var startTimestamp: Long = 0
+    private var timeFromStart: Long = 0
+    private var timerStarted = false
+    private var buttonTouchTimestamp: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,14 +75,27 @@ class KeyActivity : Activity() {
         super.onResume()
         initButtons()
         generateKey()
+        startTimer()
+    }
+
+    private fun startTimer() {
+        startTimestamp = System.currentTimeMillis()
+        timerStarted = true
+        buttonTouchTimestamp = startTimestamp
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         if (event == null) {
             return super.onTouchEvent(event)
         }
+        if (timerStarted) stopTimer()
         onTouch(event)
         return super.dispatchTouchEvent(event)
+    }
+
+    private fun stopTimer() {
+        timerStarted = false
+        timeFromStart = System.currentTimeMillis() - startTimestamp
     }
 
     private fun onTouch(event: MotionEvent) {
@@ -107,7 +125,8 @@ class KeyActivity : Activity() {
             if (touchedButton.key != null) {
                 if (touchedButton.key == currentKey) {
                     touchedButton.setGreenColor()
-                    if (currentKey == 3) {
+                    touchedButton.setTimeToTouch()
+                    if (currentKey == keyButtons.size - 1) {
                         keyCorrect()
                     } else {
                         currentKey++
@@ -126,7 +145,7 @@ class KeyActivity : Activity() {
     private fun draw(event: MotionEvent) {
         stopx = event.x
         stopy = event.y
-        canvas.drawLine(startx, starty-100, stopx, stopy-100, paint)
+        canvas.drawLine(startx, starty - 100, stopx, stopy - 100, paint)
         imageView.invalidate()
     }
 
@@ -137,8 +156,10 @@ class KeyActivity : Activity() {
         val intent = intent
         val uid = RegistrationActivity.getUid(this) ?: RegistrationActivity.generateUID(this)
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
-        val userInputData = UserInputData(uid, attempts, healthTest,
-                keyButtons.map { keyButtons -> KeyData(keyButtons.key, keyButtons.value.buttonX, keyButtons.value.buttonY) },
+        val userInputData = UserInputData(uid, attempts, timeFromStart, healthTest,
+                keyButtons.map { keyButton ->
+                    KeyData(keyButton.key ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
+                },
                 drawData)
 
         val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
@@ -181,6 +202,9 @@ class KeyActivity : Activity() {
         val button7 = RoundButton(findViewById(R.id.button7))
         val button8 = RoundButton(findViewById(R.id.button8))
         val button9 = RoundButton(findViewById(R.id.button9))
+        val button10 = RoundButton(findViewById(R.id.button10))
+        val button11 = RoundButton(findViewById(R.id.button11))
+        val button12 = RoundButton(findViewById(R.id.button12))
 
         button1.addNeighbors(listOf(button2, button4, button5))
         button2.addNeighbors(listOf(button1, button3, button4, button5, button6))
@@ -188,41 +212,39 @@ class KeyActivity : Activity() {
         button4.addNeighbors(listOf(button1, button2, button5, button7, button8))
         button5.addNeighbors(listOf(button1, button2, button3, button4, button6, button7, button8, button9))
         button6.addNeighbors(listOf(button2, button3, button5, button8, button9))
-        button7.addNeighbors(listOf(button4, button5, button8))
-        button8.addNeighbors(listOf(button4, button5, button6, button7, button9))
-        button9.addNeighbors(listOf(button5, button6, button8))
+        button7.addNeighbors(listOf(button4, button5, button8, button10, button11))
+        button8.addNeighbors(listOf(button4, button5, button6, button7, button9, button10, button11, button12))
+        button9.addNeighbors(listOf(button5, button6, button8, button11, button12))
+        button10.addNeighbors(listOf(button7, button8, button11))
+        button11.addNeighbors(listOf(button7, button8, button9, button10, button12))
+        button12.addNeighbors(listOf(button8, button9, button11))
 
-        buttons = listOf(button1, button2, button3, button4, button5, button6, button7, button8, button9)
+        buttons = listOf(button1, button2, button3,
+                button4, button5, button6,
+                button7, button8, button9,
+                button10, button11, button12)
     }
 
     private fun generateKey() {
+        var neighbors = buttons
+        val keyButtons = mutableListOf<RoundButton>()
         currentKey = 1
-        var min = 0
-        var max = 8
-        val firstButton = buttons[randomInt(min, max)]
-        firstButton.key = 1
-        firstButton.setText("1")
 
-        min = 0
-        max = firstButton.neighbors.size - 1
-
-        val secondButton = firstButton.neighbors[randomInt(min, max)]
-        secondButton.key = 2
-        secondButton.setText("2")
-        max = secondButton.neighbors.size - 1
-
-        var thirdButton = secondButton.neighbors[randomInt(min, max)]
-        while (thirdButton == firstButton) {
-            thirdButton = secondButton.neighbors[randomInt(min, max)]
+        for (i in 1..KEYS_TO_GENERATE) {
+            var keyButton = neighbors[randomInt()]
+            while (keyButtons.contains(keyButton)) {
+                keyButton = neighbors[randomInt()]
+            }
+            keyButton.key = i
+            keyButton.setText(i.toString())
+            neighbors = keyButton.neighbors
+            keyButtons.add(keyButton)
         }
-
-        thirdButton.key = 3
-        thirdButton.setText("3")
-
-        keyButtons = mapOf(Pair(1, firstButton), Pair(2, secondButton), Pair(3, thirdButton))
     }
 
-    private fun randomInt(min: Int, max: Int): Int {
+    private fun randomInt(): Int {
+        val min = 0
+        val max = BUTTONS_COUNT - 1
         return min + (Math.random() * (max - min)).roundToInt()
     }
 
@@ -233,9 +255,15 @@ class KeyActivity : Activity() {
         private var rad: Double = 0.0
         val neighbors: MutableList<RoundButton> = mutableListOf()
         var key: Int? = null
+        var timeToTouch: Long = 0
 
         fun setText(text: String) {
             button.text = text
+        }
+
+        fun setTimeToTouch() {
+            timeToTouch = System.currentTimeMillis() - buttonTouchTimestamp
+            buttonTouchTimestamp = System.currentTimeMillis()
         }
 
         fun setGreenColor() {
@@ -269,6 +297,10 @@ class KeyActivity : Activity() {
             neighbors.addAll(buttons)
         }
 
+    }
 
+    companion object {
+        private const val KEYS_TO_GENERATE = 5
+        private const val BUTTONS_COUNT = 12
     }
 }
