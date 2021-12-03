@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.RegistrationData
-import com.graphic.key.task.SendDataTask
+import com.graphic.key.task.DataSender
 import java.lang.Integer.parseInt
 import java.lang.ref.WeakReference
 import java.util.*
@@ -72,7 +72,7 @@ class RegistrationActivity : Activity() {
             saveServerUrl(serverUrl)
 
             val registrationUrl = serverUrl + "/" + this.getString(R.string.registrationUrl)
-            val task = SendDataTask(WeakReference(this.applicationContext), registrationUrl)
+            val task = DataSender(WeakReference(this.applicationContext), registrationUrl)
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, regData)
 
             val intent = Intent(this, HealthTestActivity::class.java)

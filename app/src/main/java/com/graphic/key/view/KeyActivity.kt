@@ -11,13 +11,19 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
 import com.graphic.key.data.HealthTestData
 import com.graphic.key.data.KeyData
 import com.graphic.key.data.UserInputData
-import com.graphic.key.task.SendDataTask
+import com.graphic.key.data.model.KeyViewModel
+import com.graphic.key.task.DataSender
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -44,10 +50,14 @@ class KeyActivity : Activity() {
     private var timeFromStart: Long = 0
     private var timerStarted = false
     private var buttonTouchTimestamp: Long = 0
+    private var keyViewModel: KeyViewModel by viewMo -
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.key_layout)
+
+        val viewModel =
+
 
         imageView = findViewById<View>(R.id.draw_pad) as ImageView
 
@@ -158,14 +168,19 @@ class KeyActivity : Activity() {
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
         val userInputData = UserInputData(uid, attempts, timeFromStart, healthTest,
                 keyButtons.map { keyButton ->
-                    KeyData(keyButton.key ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
+                    KeyData(keyButton.key
+                            ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
                 },
                 drawData)
 
         val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
 
         val url = serverUrl + "/" + this.getString(R.string.dataUrl)
-        val task = SendDataTask(WeakReference(this.applicationContext), url)
+        val viewModelScope = CoroutineScope(SupervisorJob())
+        viewModelScope.launch {
+            val result = DataSender(url).send(userInputData)
+        }
+        val task = DataSender(WeakReference(this.applicationContext), url)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userInputData)
         attempts = 0
     }
