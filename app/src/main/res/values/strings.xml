@@ -9,5 +9,6 @@
     <string name="dataUrl">reportbook/api/v1/sys/data</string>
     <string name="userName">etpmv</string>
     <string name="password">1qaz@WSX</string>
-    <string name="server_address">http://www.reportsbook3.club:9099</string>
+    <string name="server_address">http://10.0.2.2:8080</string>
+<!--    <string name="server_address">http://www.reportsbook3.club:9099</string>-->
 </resources>

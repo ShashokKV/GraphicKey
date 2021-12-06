@@ -25,7 +25,7 @@ import kotlin.math.roundToInt
 
 class KeyActivity : Activity() {
     private lateinit var buttons: List<RoundButton>
-    private lateinit var keyButtons: MutableList<RoundButton>
+    private var keyButtons: MutableList<RoundButton> = mutableListOf()
     private var currentKey: Int = 1
     private var drawData: MutableList<DrawData> = arrayListOf()
     private lateinit var imageView: ImageView
@@ -126,7 +126,7 @@ class KeyActivity : Activity() {
                 if (touchedButton.key == currentKey) {
                     touchedButton.setGreenColor()
                     touchedButton.setTimeToTouch()
-                    if (currentKey == keyButtons.size - 1) {
+                    if (currentKey == keyButtons.size) {
                         keyCorrect()
                     } else {
                         currentKey++
@@ -190,6 +190,7 @@ class KeyActivity : Activity() {
         detectInput = true
 
         generateKey()
+        startTimer()
     }
 
     private fun initButtons() {
@@ -226,14 +227,14 @@ class KeyActivity : Activity() {
     }
 
     private fun generateKey() {
+        keyButtons.clear()
         var neighbors = buttons
-        val keyButtons = mutableListOf<RoundButton>()
         currentKey = 1
 
         for (i in 1..KEYS_TO_GENERATE) {
-            var keyButton = neighbors[randomInt()]
+            var keyButton = neighbors[randomInt(neighbors.size-1)]
             while (keyButtons.contains(keyButton)) {
-                keyButton = neighbors[randomInt()]
+                keyButton = neighbors[randomInt(neighbors.size-1)]
             }
             keyButton.key = i
             keyButton.setText(i.toString())
@@ -242,9 +243,8 @@ class KeyActivity : Activity() {
         }
     }
 
-    private fun randomInt(): Int {
+    private fun randomInt(max: Int): Int {
         val min = 0
-        val max = BUTTONS_COUNT - 1
         return min + (Math.random() * (max - min)).roundToInt()
     }
 
@@ -301,6 +301,5 @@ class KeyActivity : Activity() {
 
     companion object {
         private const val KEYS_TO_GENERATE = 5
-        private const val BUTTONS_COUNT = 12
     }
 }
