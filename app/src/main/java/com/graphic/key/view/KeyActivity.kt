@@ -1,29 +1,30 @@
 package com.graphic.key.view
 
+
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.graphics.*
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
 import com.graphic.key.data.HealthTestData
 import com.graphic.key.data.KeyData
 import com.graphic.key.data.UserInputData
-import com.graphic.key.task.SendDataTask
-import java.lang.ref.WeakReference
+import com.graphic.key.data.model.KeyViewModel
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
-class KeyActivity : Activity() {
+class KeyActivity : ComponentActivity() {
     private lateinit var buttons: List<RoundButton>
     private var keyButtons: MutableList<RoundButton> = mutableListOf()
     private var currentKey: Int = 1
@@ -44,6 +45,7 @@ class KeyActivity : Activity() {
     private var timeFromStart: Long = 0
     private var timerStarted = false
     private var buttonTouchTimestamp: Long = 0
+    private val keyViewModel: KeyViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,11 +53,22 @@ class KeyActivity : Activity() {
 
         imageView = findViewById<View>(R.id.draw_pad) as ImageView
 
-        val currentDisplay = windowManager.defaultDisplay
-        val point = Point()
-        currentDisplay.getSize(point)
-        val dw = point.x
-        val dh = point.y
+        val dw: Int
+        val dh: Int
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            dw = bounds.width()
+            dh = bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            val currentDisplay = windowManager.defaultDisplay
+            val point = Point()
+            @Suppress("DEPRECATION")
+            currentDisplay.getSize(point)
+             dw = point.x
+             dh = point.y
+        }
 
         bitmap = Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap)
@@ -119,7 +132,7 @@ class KeyActivity : Activity() {
 
         if (!detectInput) return
 
-        drawData.add(DrawData(event.x, event.y, System.currentTimeMillis()))
+        keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis()))
         val touchedButton = buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
         if (touchedButton != null) {
             if (touchedButton.key != null) {
@@ -158,15 +171,21 @@ class KeyActivity : Activity() {
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
         val userInputData = UserInputData(uid, attempts, timeFromStart, healthTest,
                 keyButtons.map { keyButton ->
-                    KeyData(keyButton.key ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
+                    KeyData(keyButton.key
+                            ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
                 },
-                drawData)
+                keyViewModel.getDrawDataList())
 
         val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
 
         val url = serverUrl + "/" + this.getString(R.string.dataUrl)
-        val task = SendDataTask(WeakReference(this.applicationContext), url)
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userInputData)
+
+        val resultObserver = Observer<String> { result ->
+            Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+        }
+
+        keyViewModel.sendDrawData(url, userInputData)
+            .observe(this, resultObserver)
         attempts = 0
     }
 

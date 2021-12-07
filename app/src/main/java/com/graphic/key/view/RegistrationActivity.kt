@@ -1,24 +1,27 @@
 package com.graphic.key.view
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.RegistrationData
-import com.graphic.key.task.SendDataTask
+import com.graphic.key.data.model.RegistrationViewModel
 import java.lang.Integer.parseInt
-import java.lang.ref.WeakReference
 import java.util.*
 
-class RegistrationActivity : Activity() {
+
+class RegistrationActivity : ComponentActivity() {
+    private val registrationViewModel: RegistrationViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +75,13 @@ class RegistrationActivity : Activity() {
             saveServerUrl(serverUrl)
 
             val registrationUrl = serverUrl + "/" + this.getString(R.string.registrationUrl)
-            val task = SendDataTask(WeakReference(this.applicationContext), registrationUrl)
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, regData)
+
+            val resultObserver = Observer<String> { result ->
+                Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+            }
+
+            registrationViewModel.sendRegistrationData(registrationUrl, regData)
+                .observe(this, resultObserver)
 
             val intent = Intent(this, HealthTestActivity::class.java)
             intent.putExtra("uid", uid)
