@@ -83,12 +83,10 @@ class RegistrationActivity : ComponentActivity() {
 
             val registrationUrl = serverUrl + "/" + this.getString(R.string.registrationUrl)
 
-            liveData {
-                val data = registrationViewModel.sendRegistrationData(registrationUrl, regData)
-                emit(data)
-            }.observe(this) { result ->
-                Toast.makeText(this, result, Toast.LENGTH_LONG).show()
-            }
+            registrationViewModel.sendRegistrationData(registrationUrl, regData)
+                .observe(this) { result ->
+                    Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+                }
 
             val intent = Intent(this, HealthTestActivity::class.java)
             intent.putExtra("uid", uid)

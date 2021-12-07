@@ -39,10 +39,10 @@ class DataSender(private val url: String) {
                 }
                 Log.d("send data", response.toString())
             } catch (e: Exception) {
-                e.localizedMessage
+                return@withContext e.localizedMessage?:"Ошибка отправки данных"
             }
 
-            "Данные успешно отправлены"
+            return@withContext "Данные успешно отправлены"
         }
 
     }

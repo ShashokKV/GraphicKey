@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.liveData
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
@@ -186,12 +185,10 @@ class KeyActivity : ComponentActivity() {
 
         val url = serverUrl + "/" + this.getString(R.string.dataUrl)
 
-        liveData {
-            val data = keyViewModel.sendDrawData(url, userInputData)
-            emit(data)
-        }.observe(this) { result ->
-            Toast.makeText(this, result, Toast.LENGTH_LONG).show()
-        }
+        keyViewModel.sendDrawData(url, userInputData)
+            .observe(this) { result ->
+                Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+            }
 
         attempts = 0
     }
