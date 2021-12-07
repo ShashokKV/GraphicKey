@@ -1,9 +1,6 @@
 package com.graphic.key.task
 
-import android.content.Context
-import android.os.AsyncTask
 import android.util.Log
-import android.widget.Toast
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.features.*
@@ -13,8 +10,8 @@ import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.*
-import java.lang.ref.WeakReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DataSender(private val url: String) {
 
@@ -48,14 +45,6 @@ class DataSender(private val url: String) {
             "Данные успешно отправлены"
         }
 
-    }
-
-    override fun onPostExecute(result: String?) {
-        super.onPostExecute(result)
-        val context = weakReference.get()
-        if (context != null) {
-            Toast.makeText(context, result, Toast.LENGTH_LONG).show()
-        }
     }
 
     companion object {

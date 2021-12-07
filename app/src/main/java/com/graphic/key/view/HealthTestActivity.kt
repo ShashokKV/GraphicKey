@@ -54,11 +54,5 @@ class HealthTestActivity: Activity() {
             intent.putExtra("healthTestData", healthTestData)
             startActivity(intent)
         }
-
-
-
-
-
-
     }
 }

@@ -1,18 +1,18 @@
 package com.graphic.key.view
 
+
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.graphics.*
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
@@ -20,16 +20,11 @@ import com.graphic.key.data.HealthTestData
 import com.graphic.key.data.KeyData
 import com.graphic.key.data.UserInputData
 import com.graphic.key.data.model.KeyViewModel
-import com.graphic.key.task.DataSender
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
-class KeyActivity : Activity() {
+class KeyActivity : ComponentActivity() {
     private lateinit var buttons: List<RoundButton>
     private lateinit var keyButtons: MutableList<RoundButton>
     private var currentKey: Int = 1
@@ -50,22 +45,30 @@ class KeyActivity : Activity() {
     private var timeFromStart: Long = 0
     private var timerStarted = false
     private var buttonTouchTimestamp: Long = 0
-    private var keyViewModel: KeyViewModel by viewMo -
+    private val keyViewModel: KeyViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.key_layout)
 
-        val viewModel =
-
-
         imageView = findViewById<View>(R.id.draw_pad) as ImageView
 
-        val currentDisplay = windowManager.defaultDisplay
-        val point = Point()
-        currentDisplay.getSize(point)
-        val dw = point.x
-        val dh = point.y
+        val dw: Int
+        val dh: Int
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            dw = bounds.width()
+            dh = bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            val currentDisplay = windowManager.defaultDisplay
+            val point = Point()
+            @Suppress("DEPRECATION")
+            currentDisplay.getSize(point)
+             dw = point.x
+             dh = point.y
+        }
 
         bitmap = Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap)
@@ -129,7 +132,7 @@ class KeyActivity : Activity() {
 
         if (!detectInput) return
 
-        drawData.add(DrawData(event.x, event.y, System.currentTimeMillis()))
+        keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis()))
         val touchedButton = buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
         if (touchedButton != null) {
             if (touchedButton.key != null) {
@@ -171,17 +174,18 @@ class KeyActivity : Activity() {
                     KeyData(keyButton.key
                             ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
                 },
-                drawData)
+                keyViewModel.getDrawDataList())
 
         val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
 
         val url = serverUrl + "/" + this.getString(R.string.dataUrl)
-        val viewModelScope = CoroutineScope(SupervisorJob())
-        viewModelScope.launch {
-            val result = DataSender(url).send(userInputData)
+
+        val resultObserver = Observer<String> { result ->
+            Toast.makeText(this, result, Toast.LENGTH_LONG).show()
         }
-        val task = DataSender(WeakReference(this.applicationContext), url)
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userInputData)
+
+        keyViewModel.sendDrawData(url, userInputData)
+            .observe(this, resultObserver)
         attempts = 0
     }
 
