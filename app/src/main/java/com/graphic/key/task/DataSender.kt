@@ -17,19 +17,19 @@ class DataSender(private val url: String) {
 
     suspend fun send(vararg data: Any): String {
 
-            val client = HttpClient(Android) {
-                install(Auth) {
-                    basic {
-                        credentials {
-                            BasicAuthCredentials(username = USER_NAME, password = PASSWORD)
-                        }
+        val client = HttpClient(Android) {
+            install(Auth) {
+                basic {
+                    credentials {
+                        BasicAuthCredentials(username = USER_NAME, password = PASSWORD)
                     }
                 }
-                install(JsonFeature)
-                install(HttpTimeout) {
-                    requestTimeoutMillis = 10000
-                }
             }
+            install(JsonFeature)
+            install(HttpTimeout) {
+                requestTimeoutMillis = 10000
+            }
+        }
 
         return withContext(Dispatchers.IO) {
             try {

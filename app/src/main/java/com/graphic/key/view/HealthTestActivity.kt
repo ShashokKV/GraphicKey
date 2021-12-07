@@ -8,7 +8,7 @@ import android.widget.RadioGroup
 import com.graphic.key.R
 import com.graphic.key.data.HealthTestData
 
-class HealthTestActivity: Activity() {
+class HealthTestActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,25 +21,25 @@ class HealthTestActivity: Activity() {
 
         val testConfirmButton = findViewById<Button>(R.id.buttonTestEnter)
         testConfirmButton.setOnClickListener {
-            val health = when(healthRadioGroup.checkedRadioButtonId) {
-                R.id.radioButtonExcellent->"excellent"
-                R.id.radioButtonSatisfactory->"satisfactory"
-                R.id.radioButtonReduced->"reduced"
-                R.id.radioButtonVeryBad->"bad"
+            val health = when (healthRadioGroup.checkedRadioButtonId) {
+                R.id.radioButtonExcellent -> "excellent"
+                R.id.radioButtonSatisfactory -> "satisfactory"
+                R.id.radioButtonReduced -> "reduced"
+                R.id.radioButtonVeryBad -> "bad"
                 else -> "bad"
             }
 
-            val physicalActivity = when(physicalActivityRadioGroup.checkedRadioButtonId) {
+            val physicalActivity = when (physicalActivityRadioGroup.checkedRadioButtonId) {
                 R.id.radioButtonPhysicalActivityNo -> "no"
                 else -> "yes"
             }
 
-            val tiredness = when(tirednessRadioGroup.checkedRadioButtonId) {
+            val tiredness = when (tirednessRadioGroup.checkedRadioButtonId) {
                 R.id.radioButtonTirednessNo -> "no"
                 else -> "yes"
             }
 
-            val alcohol = when(alcoholRadioGroup.checkedRadioButtonId) {
+            val alcohol = when (alcoholRadioGroup.checkedRadioButtonId) {
                 R.id.radioButtonAlcoholNo -> "no"
                 R.id.radioButtonAlcoholYes -> "yes"
                 else -> "hangover"

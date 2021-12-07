@@ -12,7 +12,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.Observer
+import androidx.lifecycle.liveData
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
@@ -66,8 +66,8 @@ class KeyActivity : ComponentActivity() {
             val point = Point()
             @Suppress("DEPRECATION")
             currentDisplay.getSize(point)
-             dw = point.x
-             dh = point.y
+            dw = point.x
+            dh = point.y
         }
 
         bitmap = Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888)
@@ -133,7 +133,8 @@ class KeyActivity : ComponentActivity() {
         if (!detectInput) return
 
         keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis()))
-        val touchedButton = buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
+        val touchedButton =
+            buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
         if (touchedButton != null) {
             if (touchedButton.key != null) {
                 if (touchedButton.key == currentKey) {
@@ -169,23 +170,29 @@ class KeyActivity : ComponentActivity() {
         val intent = intent
         val uid = RegistrationActivity.getUid(this) ?: RegistrationActivity.generateUID(this)
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
-        val userInputData = UserInputData(uid, attempts, timeFromStart, healthTest,
-                keyButtons.map { keyButton ->
-                    KeyData(keyButton.key
-                            ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY)
-                },
-                keyViewModel.getDrawDataList())
+        val userInputData = UserInputData(
+            uid, attempts, timeFromStart, healthTest,
+            keyButtons.map { keyButton ->
+                KeyData(
+                    keyButton.key
+                        ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY
+                )
+            },
+            keyViewModel.getDrawDataList()
+        )
 
-        val serverUrl = PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
+        val serverUrl =
+            PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
 
         val url = serverUrl + "/" + this.getString(R.string.dataUrl)
 
-        val resultObserver = Observer<String> { result ->
+        liveData {
+            val data = keyViewModel.sendDrawData(url, userInputData)
+            emit(data)
+        }.observe(this) { result ->
             Toast.makeText(this, result, Toast.LENGTH_LONG).show()
         }
 
-        keyViewModel.sendDrawData(url, userInputData)
-            .observe(this, resultObserver)
         attempts = 0
     }
 
@@ -230,19 +237,43 @@ class KeyActivity : ComponentActivity() {
         button2.addNeighbors(listOf(button1, button3, button4, button5, button6))
         button3.addNeighbors(listOf(button2, button5, button6))
         button4.addNeighbors(listOf(button1, button2, button5, button7, button8))
-        button5.addNeighbors(listOf(button1, button2, button3, button4, button6, button7, button8, button9))
+        button5.addNeighbors(
+            listOf(
+                button1,
+                button2,
+                button3,
+                button4,
+                button6,
+                button7,
+                button8,
+                button9
+            )
+        )
         button6.addNeighbors(listOf(button2, button3, button5, button8, button9))
         button7.addNeighbors(listOf(button4, button5, button8, button10, button11))
-        button8.addNeighbors(listOf(button4, button5, button6, button7, button9, button10, button11, button12))
+        button8.addNeighbors(
+            listOf(
+                button4,
+                button5,
+                button6,
+                button7,
+                button9,
+                button10,
+                button11,
+                button12
+            )
+        )
         button9.addNeighbors(listOf(button5, button6, button8, button11, button12))
         button10.addNeighbors(listOf(button7, button8, button11))
         button11.addNeighbors(listOf(button7, button8, button9, button10, button12))
         button12.addNeighbors(listOf(button8, button9, button11))
 
-        buttons = listOf(button1, button2, button3,
-                button4, button5, button6,
-                button7, button8, button9,
-                button10, button11, button12)
+        buttons = listOf(
+            button1, button2, button3,
+            button4, button5, button6,
+            button7, button8, button9,
+            button10, button11, button12
+        )
     }
 
     private fun generateKey() {
@@ -251,9 +282,9 @@ class KeyActivity : ComponentActivity() {
         currentKey = 1
 
         for (i in 1..KEYS_TO_GENERATE) {
-            var keyButton = neighbors[randomInt(neighbors.size-1)]
+            var keyButton = neighbors[randomInt(neighbors.size - 1)]
             while (keyButtons.contains(keyButton)) {
-                keyButton = neighbors[randomInt(neighbors.size-1)]
+                keyButton = neighbors[randomInt(neighbors.size - 1)]
             }
             keyButton.key = i
             keyButton.setText(i.toString())
@@ -309,7 +340,8 @@ class KeyActivity : ComponentActivity() {
                 buttonX = coordinates[0] + rad.roundToInt()
                 buttonY = coordinates[1] + rad.roundToInt()
             }
-            return rad.pow(2.0) > (x - buttonX).toDouble().pow(2.0) + (y - buttonY).toDouble().pow(2.0)
+            return rad.pow(2.0) > (x - buttonX).toDouble().pow(2.0) + (y - buttonY).toDouble()
+                .pow(2.0)
         }
 
         fun addNeighbors(buttons: List<RoundButton>) {

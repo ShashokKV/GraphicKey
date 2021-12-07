@@ -1,7 +1,6 @@
 package com.graphic.key.data.model
 
 
-
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,7 +10,7 @@ import com.graphic.key.data.UserInputData
 import com.graphic.key.task.DataSender
 import kotlinx.coroutines.launch
 
-class KeyViewModel: ViewModel() {
+class KeyViewModel : ViewModel() {
     private var drawDataList: MutableList<DrawData> = arrayListOf()
 
     fun getDrawDataList(): MutableList<DrawData> {
@@ -19,13 +18,13 @@ class KeyViewModel: ViewModel() {
     }
 
     fun addToDrawData(drawData: DrawData) {
-       drawDataList.add(drawData)
-   }
+        drawDataList.add(drawData)
+    }
 
-    fun sendDrawData(url: String, userInputData: UserInputData): LiveData<String> {
-        val result = MutableLiveData<String>()
+    fun sendDrawData(url: String, userInputData: UserInputData): String {
+        var result = ""
         viewModelScope.launch {
-            result.value = DataSender(url).send(userInputData)
+            result = DataSender(url).send(userInputData)
         }
         return result
     }
