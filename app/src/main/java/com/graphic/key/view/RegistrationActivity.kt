@@ -10,11 +10,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
-import androidx.lifecycle.liveData
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.RegistrationData
 import com.graphic.key.data.model.RegistrationViewModel
+import com.graphic.key.task.DataSender.Companion.SUCCESS
 import java.lang.Integer.parseInt
 import java.util.*
 
@@ -37,9 +38,6 @@ class RegistrationActivity : ComponentActivity() {
         val heightTextView = findViewById<TextView>(R.id.heightInput)
         val ageTextView = findViewById<TextView>(R.id.ageInput)
         val sexRadioGroup = findViewById<RadioGroup>(R.id.sexRadioGroup)
-        val serverAddress = findViewById<TextView>(R.id.serverAddress)
-        serverAddress.text = getString(R.string.server_address)
-
         val regButton = findViewById<Button>(R.id.registrationButton)
 
         regButton.setOnClickListener {
@@ -53,7 +51,6 @@ class RegistrationActivity : ComponentActivity() {
             if (weightTextView.text.isEmpty()) emptyFields.add("Вес")
             if (heightTextView.text.isEmpty()) emptyFields.add("Рост")
             if (ageTextView.text.isEmpty()) emptyFields.add("Возраст")
-            if (serverAddress.text.isEmpty()) emptyFields.add("Адрес сервера")
 
             if (emptyFields.isNotEmpty()) {
                 Toast.makeText(
@@ -68,7 +65,7 @@ class RegistrationActivity : ComponentActivity() {
             val sex =
                 if (sexRadioGroup.checkedRadioButtonId == R.id.femaleRadioButton) "female" else "male"
 
-            val uid = generateUID(this)
+            val uid = getUid(this) ?: generateUID(this)
             val regData = RegistrationData(
                 uid,
                 email,
@@ -78,25 +75,19 @@ class RegistrationActivity : ComponentActivity() {
                 sex
             )
 
-            val serverUrl = serverAddress.text.toString()
-            saveServerUrl(serverUrl)
-
-            val registrationUrl = serverUrl + "/" + this.getString(R.string.registrationUrl)
+            val registrationUrl = getString(R.string.server_address) +
+                    "/" + this.getString(R.string.registrationUrl)
 
             registrationViewModel.sendRegistrationData(registrationUrl, regData)
                 .observe(this) { result ->
                     Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+                    if (result == SUCCESS) {
+                        val intent = Intent(this, HealthTestActivity::class.java)
+                        intent.putExtra("uid", uid)
+                        startActivity(intent)
+                    }
                 }
-
-            val intent = Intent(this, HealthTestActivity::class.java)
-            intent.putExtra("uid", uid)
-            startActivity(intent)
         }
-    }
-
-    private fun saveServerUrl(url: String) {
-        PreferenceManager.getDefaultSharedPreferences(this).edit().putString("SERVER_URL", url)
-            .apply()
     }
 
     companion object Uid {
@@ -106,11 +97,10 @@ class RegistrationActivity : ComponentActivity() {
 
         fun generateUID(context: Context): String {
             val uid = UUID.randomUUID().toString()
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("UID", uid)
-                .apply()
+            PreferenceManager.getDefaultSharedPreferences(context).edit {
+                putString("UID", uid)
+            }
             return uid
         }
     }
-
-
 }

@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
 import com.graphic.key.data.HealthTestData
@@ -32,13 +31,13 @@ class KeyActivity : ComponentActivity() {
     private lateinit var bitmap: Bitmap
     private lateinit var canvas: Canvas
     private lateinit var paint: Paint
-    private var startx: Float = 0f
-    private var starty: Float = 0f
+    private var startX: Float = 0f
+    private var startY: Float = 0f
     private var detectInput = true
     private var attempts = 0
 
-    private var stopx: Float = 0f
-    private var stopy: Float = 0f
+    private var stopX: Float = 0f
+    private var stopY: Float = 0f
 
     private var startTimestamp: Long = 0
     private var timeFromStart: Long = 0
@@ -113,13 +112,13 @@ class KeyActivity : ComponentActivity() {
     private fun onTouch(event: MotionEvent) {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                startx = event.x
-                starty = event.y
+                startX = event.x
+                startY = event.y
             }
             MotionEvent.ACTION_MOVE -> {
                 draw(event)
-                startx = event.x
-                starty = event.y
+                startX = event.x
+                startY = event.y
             }
             MotionEvent.ACTION_UP -> {
                 draw(event)
@@ -156,9 +155,9 @@ class KeyActivity : ComponentActivity() {
     }
 
     private fun draw(event: MotionEvent) {
-        stopx = event.x
-        stopy = event.y
-        canvas.drawLine(startx, starty - 100, stopx, stopy - 100, paint)
+        stopX = event.x
+        stopY = event.y
+        canvas.drawLine(startX, startY, stopX, stopY, paint)
         imageView.invalidate()
     }
 
@@ -180,10 +179,7 @@ class KeyActivity : ComponentActivity() {
             keyViewModel.getDrawDataList()
         )
 
-        val serverUrl =
-            PreferenceManager.getDefaultSharedPreferences(this).getString("SERVER_URL", null)
-
-        val url = serverUrl + "/" + this.getString(R.string.dataUrl)
+        val url = getString(R.string.server_address) + "/" + this.getString(R.string.dataUrl)
 
         keyViewModel.sendDrawData(url, userInputData)
             .observe(this) { result ->
@@ -344,7 +340,6 @@ class KeyActivity : ComponentActivity() {
         fun addNeighbors(buttons: List<RoundButton>) {
             neighbors.addAll(buttons)
         }
-
     }
 
     companion object {

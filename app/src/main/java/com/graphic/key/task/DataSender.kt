@@ -39,10 +39,10 @@ class DataSender(private val url: String) {
                 }
                 Log.d("send data", response.toString())
             } catch (e: Exception) {
-                return@withContext e.localizedMessage?:"Ошибка отправки данных"
+                e.localizedMessage
             }
 
-            return@withContext "Данные успешно отправлены"
+            SUCCESS
         }
 
     }
@@ -50,5 +50,6 @@ class DataSender(private val url: String) {
     companion object {
         private const val USER_NAME = "etpmv"
         private const val PASSWORD = "1qaz@WSX"
+        public const val SUCCESS = "Данные успешно отправлены"
     }
 }
