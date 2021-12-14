@@ -12,6 +12,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import com.graphic.key.R
 import com.graphic.key.data.DrawData
 import com.graphic.key.data.HealthTestData
@@ -167,9 +169,10 @@ class KeyActivity : ComponentActivity() {
 
         val intent = intent
         val uid = RegistrationActivity.getUid(this) ?: RegistrationActivity.generateUID(this)
+        val testId = getAndIncrementTestId()
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
         val userInputData = UserInputData(
-            uid, attempts, timeFromStart, healthTest,
+            uid, testId, attempts, timeFromStart, healthTest,
             keyButtons.map { keyButton ->
                 KeyData(
                     keyButton.key
@@ -187,6 +190,13 @@ class KeyActivity : ComponentActivity() {
             }
 
         attempts = 0
+    }
+
+    private fun getAndIncrementTestId(): Int {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val testId = prefs.getInt("testId", 1)
+        prefs.edit { putInt("testId", testId + 1) }
+        return testId
     }
 
     private fun keyIncorrect() {
