@@ -42,9 +42,8 @@ class KeyActivity : ComponentActivity() {
     private var stopY: Float = 0f
 
     private var startTimestamp: Long = 0
-    private var timeFromStart: Long = 0
+    private var firstTouchTime: Long = 0
     private var timerStarted = false
-    private var buttonTouchTimestamp: Long = 0
     private val keyViewModel: KeyViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,23 +91,22 @@ class KeyActivity : ComponentActivity() {
     }
 
     private fun startTimer() {
-        startTimestamp = System.currentTimeMillis()
         timerStarted = true
-        buttonTouchTimestamp = startTimestamp
+        startTimestamp = System.currentTimeMillis()
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
         if (event == null) {
             return super.onTouchEvent(event)
         }
-        if (timerStarted) stopTimer()
+        if (timerStarted) updateStartTimestamp()
         onTouch(event)
         return super.dispatchTouchEvent(event)
     }
 
-    private fun stopTimer() {
+    private fun updateStartTimestamp() {
         timerStarted = false
-        timeFromStart = System.currentTimeMillis() - startTimestamp
+        firstTouchTime = System.currentTimeMillis() - startTimestamp
     }
 
     private fun onTouch(event: MotionEvent) {
@@ -132,7 +130,7 @@ class KeyActivity : ComponentActivity() {
 
         if (!detectInput) return
 
-        keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis()))
+        keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis() - startTimestamp))
         val touchedButton =
             buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
         if (touchedButton != null) {
@@ -172,11 +170,11 @@ class KeyActivity : ComponentActivity() {
         val testId = getAndIncrementTestId()
         val healthTest = intent.getSerializableExtra("healthTestData") as HealthTestData
         val userInputData = UserInputData(
-            uid, testId, attempts, timeFromStart, healthTest,
+            uid, testId, attempts, startTimestamp, firstTouchTime, healthTest,
             keyButtons.map { keyButton ->
                 KeyData(
                     keyButton.key
-                        ?: 0, keyButton.timeToTouch, keyButton.buttonX, keyButton.buttonY
+                        ?: 0, keyButton.touchTimestamp, keyButton.buttonX, keyButton.buttonY
                 )
             },
             keyViewModel.getDrawDataList()
@@ -308,15 +306,14 @@ class KeyActivity : ComponentActivity() {
         private var rad: Double = 0.0
         val neighbors: MutableList<RoundButton> = mutableListOf()
         var key: Int? = null
-        var timeToTouch: Long = 0
+        var touchTimestamp: Long = 0
 
         fun setText(text: String) {
             button.text = text
         }
 
         fun setTimeToTouch() {
-            timeToTouch = System.currentTimeMillis() - buttonTouchTimestamp
-            buttonTouchTimestamp = System.currentTimeMillis()
+            touchTimestamp = System.currentTimeMillis() - startTimestamp
         }
 
         fun setGreenColor() {

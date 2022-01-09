@@ -4,7 +4,8 @@ data class UserInputData(
     val uid: String,
     val testId: Int,
     val attempts: Int,
-    val timeFromStart: Long,
+    val startTimestamp: Long,
+    val firstTouchTime: Long,
     val healthTest: HealthTestData,
     val keyButtons: List<KeyData>,
     val drawData: MutableList<DrawData>
