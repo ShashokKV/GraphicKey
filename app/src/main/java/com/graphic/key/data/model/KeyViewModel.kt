@@ -26,6 +26,10 @@ class KeyViewModel : ViewModel() {
         }
     }
 
+    fun resetDrawData() {
+        drawDataList.clear()
+    }
+
     override fun onCleared() {
         drawDataList = arrayListOf()
     }

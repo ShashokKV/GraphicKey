@@ -28,7 +28,6 @@ class KeyActivity : ComponentActivity() {
     private lateinit var buttons: List<RoundButton>
     private var keyButtons: MutableList<RoundButton> = mutableListOf()
     private var currentKey: Int = 1
-    private var drawData: MutableList<DrawData> = arrayListOf()
     private lateinit var imageView: ImageView
     private lateinit var bitmap: Bitmap
     private lateinit var canvas: Canvas
@@ -204,7 +203,7 @@ class KeyActivity : ComponentActivity() {
     }
 
     private fun reset() {
-        drawData = arrayListOf()
+        keyViewModel.resetDrawData()
         buttons.forEach { button ->
             button.setDefaultColor()
             button.setText("")
