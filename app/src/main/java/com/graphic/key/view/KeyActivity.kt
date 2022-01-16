@@ -20,6 +20,7 @@ import com.graphic.key.data.HealthTestData
 import com.graphic.key.data.KeyData
 import com.graphic.key.data.UserInputData
 import com.graphic.key.data.model.KeyViewModel
+import com.graphic.key.task.DataSender.Companion.SUCCESS
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -129,7 +130,13 @@ class KeyActivity : ComponentActivity() {
 
         if (!detectInput) return
 
-        keyViewModel.addToDrawData(DrawData(event.x, event.y, System.currentTimeMillis() - startTimestamp))
+        keyViewModel.addToDrawData(
+            DrawData(
+                event.x,
+                event.y,
+                System.currentTimeMillis() - startTimestamp
+            )
+        )
         val touchedButton =
             buttons.filter { button -> button.isTouched(event.x, event.y) }.getOrNull(0)
         if (touchedButton != null) {
@@ -162,7 +169,6 @@ class KeyActivity : ComponentActivity() {
 
     private fun keyCorrect() {
         detectInput = false
-        Toast.makeText(this, "Введён правильный код", Toast.LENGTH_LONG).show()
 
         val intent = intent
         val uid = RegistrationActivity.getUid(this) ?: RegistrationActivity.generateUID(this)
@@ -183,7 +189,9 @@ class KeyActivity : ComponentActivity() {
 
         keyViewModel.sendDrawData(url, userInputData)
             .observe(this) { result ->
-                Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+                if (result != SUCCESS) {
+                    Toast.makeText(this, result, Toast.LENGTH_LONG).show()
+                }
             }
 
         attempts = 0
@@ -199,7 +207,6 @@ class KeyActivity : ComponentActivity() {
     private fun keyIncorrect() {
         detectInput = false
         attempts++
-        Toast.makeText(this, "Введён неправильный код", Toast.LENGTH_LONG).show()
     }
 
     private fun reset() {

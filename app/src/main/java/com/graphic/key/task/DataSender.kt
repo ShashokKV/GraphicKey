@@ -50,6 +50,6 @@ class DataSender(private val url: String) {
     companion object {
         private const val USER_NAME = "etpmv"
         private const val PASSWORD = "1qaz@WSX"
-        public const val SUCCESS = "Данные успешно отправлены"
+        const val SUCCESS = "OK"
     }
 }

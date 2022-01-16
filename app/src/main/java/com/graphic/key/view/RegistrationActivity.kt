@@ -80,11 +80,12 @@ class RegistrationActivity : ComponentActivity() {
 
             registrationViewModel.sendRegistrationData(registrationUrl, regData)
                 .observe(this) { result ->
-                    Toast.makeText(this, result, Toast.LENGTH_LONG).show()
                     if (result == SUCCESS) {
                         val intent = Intent(this, HealthTestActivity::class.java)
                         intent.putExtra("uid", uid)
                         startActivity(intent)
+                    } else {
+                        Toast.makeText(this, result, Toast.LENGTH_LONG).show()
                     }
                 }
         }
